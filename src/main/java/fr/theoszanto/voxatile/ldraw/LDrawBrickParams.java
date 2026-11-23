@@ -20,10 +20,10 @@ public class LDrawBrickParams extends PlaceableParams {
 	public String ref;
 
 	/**
-	 * Brick color ID.
+	 * Brick color ID (required).
 	 */
-	@JsonSetter(nulls = Nulls.SKIP)
-	public int color = 16;
+	@JsonSetter(nulls = Nulls.FAIL)
+	public int color;
 
 	/**
 	 * X-coordinate of the brick placement offset, in LDraw Units.
@@ -54,10 +54,12 @@ public class LDrawBrickParams extends PlaceableParams {
 	 * Creates a new {@code LDrawBrickParams}.
 	 *
 	 * @param ref Brick reference
+	 * @param color Brick color ID
 	 */
-	@ConstructorProperties("ref")
-	public LDrawBrickParams(String ref) {
+	@ConstructorProperties({ "ref", "color" })
+	public LDrawBrickParams(String ref, int color) {
 		this.ref = ref;
+		this.color = color;
 	}
 
 	private boolean isSpecialNoBrick() {
@@ -89,21 +91,19 @@ public class LDrawBrickParams extends PlaceableParams {
 	 */
 	public static LDrawBrickParams fromString(String str) {
 		// Special "no brick"
-		if (str.equals("noBrick")) {
-			LDrawBrickParams params = new LDrawBrickParams("");
-			params.color = -1;
-			return params;
-		}
+		if (str.equals("noBrick"))
+			return new LDrawBrickParams("", -1);
 
 		String[] parts = str.split("\\s+");
 		if (parts.length != 2)
 			throw new IllegalArgumentException("Invalid brick string format: " + str);
-		LDrawBrickParams params = new LDrawBrickParams(parts[0]);
+		String ref = parts[0];
+		int color;
 		try {
-			params.color = Integer.parseInt(parts[1]);
+			color = Integer.parseInt(parts[1]);
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException("Invalid brick color: " + parts[1]);
 		}
-		return params;
+		return new LDrawBrickParams(ref, color);
 	}
 }
